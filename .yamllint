@@ -1,0 +1,23 @@
+# https://yamllint.readthedocs.io/en/latest/configuration.html
+# https://yamllint.readthedocs.io/en/latest/rules.html
+---
+
+extends: default
+
+ignore: |
+  src/*.yml
+
+rules:
+  comments-indentation: disable
+  document-start: disable
+  indentation:
+    spaces: 2
+    indent-sequences: true
+    check-multi-line-strings: false
+  line-length:
+    max: 200
+    allow-non-breakable-words: true
+    allow-non-breakable-inline-mappings: true
+  trailing-spaces: enable
+
+# vim:ft=yaml
