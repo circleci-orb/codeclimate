@@ -1,0 +1,99 @@
+version: 2.1
+
+description: >
+  Upload your coverage reports to Code Climate.
+
+display:
+  home_url: https://codeclimate.com
+  source_url: https://github.com/circleci-orb/codeclimate
+
+commands:
+  upload:
+    description: "Upload code coverage to Code Climate"
+
+    parameters:
+      id:
+        description: Set the Test Reporter ID as the value of the variable $CC_TEST_REPORTER_ID using CircleCI Environment Variables.
+        type: string
+        default: ${CC_TEST_REPORTER_ID}
+      file:
+        description: Path to the code coverage data file to upload.
+        type: string
+        default: ""
+      coverage_input_type:
+        description: Type of input source to use. Required.
+        type: enum
+        enum: [
+          clover,
+          cobertura,
+          coverage.py,
+          excoveralls,
+          gcov,
+          gocov,
+          jacoco,
+          lcov,
+          simplecov,
+          xccov,
+        ]
+      when:
+        description: When should this step run.
+        type: string
+        default: "always"
+      exit_code:
+        description: Exit code of the test run.
+        type: integer
+        default: 0
+      batch_size:
+        description: Batch size for source files.
+        type: integer
+        default: 500
+      prefix:
+        description: The root directory where the coverage analysis was performed.
+        type: string
+        default: ${CIRCLE_WORKING_DIRECTORY}
+      coverage_endpoint:
+        description: Endpoint to upload coverage information to. Default to "https://api.codeclimate.com/v1/test_reports"
+        type: string
+        default: "https://api.codeclimate.com/v1/test_reports"
+      debug:
+        description: Run in debug mode.
+        type: boolean
+        default: false
+
+    steps:
+      - unless:
+          condition: "<< parameters.coverage_input_type >>"
+          steps:
+            - run:
+                name: "[ERROR]: 'coverage_input_type' is empty"
+                command: |
+                  exit 1
+      - run:
+          name: Setup Code Climate test-reporter
+          command: |
+            curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-$(uname -s | tr '[:upper:]' '[:lower:]')-amd64 > /usr/local/bin/cc-test-reporter
+            chmod +x /usr/local/bin/cc-test-reporter
+      - when:
+          condition: "<< parameters.coverage_input_type >>"
+          steps:
+            - unless:
+                condition: "<< parameters.file >>"
+                steps:
+                  - run:
+                      name: Search coverage result file and rename
+                      command: |
+                        find . -type f -name "coverage.*" -or -name "cover.*" -or -name "*.out" -exec mv {} $PWD/c.out \;
+            - run:
+                name: Upload Coverage Results
+                command: |
+                  if [ ! -f "$PWD/c.out" ]; then cp "<< parameters.file >>" $PWD/c.out; fi
+                  cc-test-reporter after-build \
+                    <<# parameters.id >> --id "<< parameters.id >>" <</ parameters.id >>\
+                    --coverage-input-type "<< parameters.coverage_input_type >>" \
+                    --exit-code "<< parameters.exit_code >>" \
+                    --batch-size "<< parameters.batch_size >>" \
+                    --prefix "<< parameters.prefix >>" \
+                    <<# parameters.debug >> --debug <</ parameters.debug >>\
+                    --coverage-endpoint "<< parameters.coverage_endpoint >>" \
+                  || ( echo 'Code Climate upload failed' && exit 1; )
+                when: "<< parameters.when >>"
