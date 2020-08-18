@@ -1,0 +1,32 @@
+description: |
+  Run `go mod download` and `go mod vendor`.
+parameters:
+  key:
+    description: |
+      "The key of restore_cache and save_cache."
+    type: string
+    default: "gomod"
+  path:
+    description: |
+      "The paths of mod cache directory."
+    type: string
+    default: "/go/pkg/mod"
+steps:
+  - restore_cache:
+      keys:
+        - << parameters.key >>-{{ checksum "go.sum" }}
+  - run:
+      name: Download go module dependencies
+      environment:
+        GO111MODULE: "on"
+      command: |
+        go mod download
+  - save_cache:
+      key: << parameters.key >>-{{ checksum "go.sum" }}
+      paths: "<< parameters.path >>"
+  - run:
+      name: Run go mod vendor
+      environment:
+        GO111MODULE: "on"
+      command: |
+        go mod vendor -v

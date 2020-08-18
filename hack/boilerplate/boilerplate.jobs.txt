@@ -1,0 +1,21 @@
+deploy-via-git:
+  parameters:
+    param:
+      description: |
+      type: string
+      default: 
+  executor: 
+  steps:
+    - install
+    - checkout
+    - when:
+        condition: << parameters.maintenance-mode >>
+        steps:
+          - run: heroku maintenance:on --app << parameters.app-name >>
+    - deploy-via-git:
+        app-name: << parameters.app-name >>
+    - steps: << parameters.post-deploy >>
+    - when:
+        condition: << parameters.maintenance-mode >>
+        steps:
+          - run: heroku maintenance:off --app << parameters.app-name >>

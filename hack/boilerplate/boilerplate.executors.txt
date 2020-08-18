@@ -1,0 +1,18 @@
+description: |
+  
+parameters:
+  image:
+    description: |
+      
+    type: string|boolean|integer|enum|executor|steps|environment variable name
+    default: ""
+docker:
+  - image: << parameters.image >>
+    name:
+    entrypoint:
+    command:
+    environment:
+      GOPATH: /Users/distiller/go
+    user:
+    auth:
+    aws_auth:
