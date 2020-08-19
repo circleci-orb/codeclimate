@@ -97,7 +97,7 @@ release:
 	git commit -m "VERSION: bump ${TAG} version"
 	git push
 	hub release create -m 'v${TAG}' v${TAG}
-	git fetch --all --prune --verbose
+	git fetch --all --prune --verbose --tags
 
 
 ## boilerplate
