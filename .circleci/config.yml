@@ -1,0 +1,69 @@
+version: 2.1
+
+executors:
+  circleci-cli:
+    docker:
+      - image: circleci/circleci-cli:alpine
+  python:
+    docker:
+      - image: cimg/python:3.8
+
+jobs:
+  validate:
+    executor: circleci-cli
+    steps:
+      - checkout
+      - run:
+          name: Install make and bash
+          command: |
+            apk --no-cache add \
+              bash \
+              make
+      - run:
+          name: Pack orb and run lint
+          command: |
+            make validate
+
+  lint:
+    executor: python
+    steps:
+      - run:
+          name: Install yamllint
+          command: |
+            pip3 install -U git+https://github.com/adrienverge/yamllint.git
+      - checkout
+      - run:
+          name: Run yamllint
+          command: |
+            make yamllint
+
+  publish:
+    executor: circleci-cli
+    steps:
+      - checkout
+      - run:
+          name: Install make and bash
+          command: |
+            apk --no-cache add \
+              bash \
+              make
+      - run:
+          name: Publish to production orb registry.
+          command: |
+            make publish
+
+workflows:
+  version: 2
+  workflows:
+    jobs:
+      - validate:
+          context: org-global
+      - lint:
+          context: org-global
+      - publish:
+          context: org-global
+          filters:
+            tags:
+              only: /^.*/
+            branches:
+              ignore: /.*/
