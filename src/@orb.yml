@@ -8,6 +8,16 @@ display:
   source_url: https://github.com/circleci-orb/codeclimate
 
 commands:
+  install:
+    description: "Install Code Climate test-reporter"
+
+    steps:
+      - run:
+          name: Install Code Climate test-reporter
+          command: |
+            curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-$(uname -s | tr '[:upper:]' '[:lower:]')-amd64 > /usr/local/bin/cc-test-reporter
+            chmod +x /usr/local/bin/cc-test-reporter
+
   upload:
     description: "Upload code coverage to Code Climate"
 
@@ -68,11 +78,6 @@ commands:
                 name: "[ERROR]: 'coverage_input_type' is empty"
                 command: |
                   exit 1
-      - run:
-          name: Setup Code Climate test-reporter
-          command: |
-            curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-$(uname -s | tr '[:upper:]' '[:lower:]')-amd64 > /usr/local/bin/cc-test-reporter
-            chmod +x /usr/local/bin/cc-test-reporter
       - when:
           condition: "<< parameters.coverage_input_type >>"
           steps:
