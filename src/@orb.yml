@@ -71,13 +71,6 @@ commands:
         default: false
 
     steps:
-      - unless:
-          condition: "<< parameters.coverage_input_type >>"
-          steps:
-            - run:
-                name: "[ERROR]: 'coverage_input_type' is empty"
-                command: |
-                  exit 1
       - when:
           condition: "<< parameters.coverage_input_type >>"
           steps:
@@ -102,3 +95,10 @@ commands:
                     --coverage-endpoint "<< parameters.coverage_endpoint >>" \
                   || ( echo 'Code Climate upload failed' && exit 1; )
                 when: "<< parameters.when >>"
+      - unless:
+          condition: "<< parameters.coverage_input_type >>"
+          steps:
+            - run:
+                name: "[ERROR]: 'coverage_input_type' parameter is empty"
+                command: |
+                  exit 1
