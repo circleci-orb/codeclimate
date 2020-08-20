@@ -82,7 +82,7 @@ commands:
                       command: |
                         find . -type f -name "coverage.*" -or -name "cover.*" -or -name "*.out" -exec mv {} $PWD/c.out \;
             - run:
-                name: Upload Coverage Results
+                name: Upload coverage results
                 command: |
                   if [ ! -f "$PWD/c.out" ]; then cp "<< parameters.file >>" $PWD/c.out; fi
                   cc-test-reporter after-build \
