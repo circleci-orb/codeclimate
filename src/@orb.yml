@@ -84,16 +84,27 @@ commands:
             - run:
                 name: Upload coverage results
                 command: |
-                  if [ ! -f "$PWD/c.out" ]; then cp "<< parameters.file >>" $PWD/c.out; fi
-                  cc-test-reporter after-build \
-                    <<# parameters.id >> --id "<< parameters.id >>" <</ parameters.id >>\
-                    --coverage-input-type "<< parameters.coverage_input_type >>" \
-                    --exit-code "<< parameters.exit_code >>" \
-                    --batch-size "<< parameters.batch_size >>" \
-                    --prefix "<< parameters.prefix >>" \
-                    <<# parameters.debug >> --debug <</ parameters.debug >>\
-                    --coverage-endpoint "<< parameters.coverage_endpoint >>" \
-                  || ( echo 'Code Climate upload failed' && exit 1; )
+                  FILE=<< parameters.file >>
+                  if [ "x$(echo ${FILE##*.})" == 'xjson' ]; then
+                    cc-test-reporter upload-coverage \
+                      --input << parameters.file >> \
+                      <<# parameters.id >> --id "<< parameters.id >>" <</ parameters.id >>\
+                      --batch-size "<< parameters.batch_size >>" \
+                      --endpoint "<< parameters.coverage_endpoint >>" \
+                      <<# parameters.debug >> --debug <</ parameters.debug >>\
+                    || ( echo 'Code Climate upload failed' && exit 1; )
+                  elif [ ! -f "$PWD/c.out" ]; then
+                    cp "<< parameters.file >>" $PWD/c.out
+                    cc-test-reporter after-build \
+                      <<# parameters.id >> --id "<< parameters.id >>" <</ parameters.id >>\
+                      --coverage-input-type "<< parameters.coverage_input_type >>" \
+                      --exit-code "<< parameters.exit_code >>" \
+                      --batch-size "<< parameters.batch_size >>" \
+                      --prefix "<< parameters.prefix >>" \
+                      --coverage-endpoint "<< parameters.coverage_endpoint >>" \
+                      <<# parameters.debug >> --debug <</ parameters.debug >>\
+                    || ( echo 'Code Climate upload failed' && exit 1; )
+                  fi
                 when: "<< parameters.when >>"
       - unless:
           condition: "<< parameters.coverage_input_type >>"
@@ -132,6 +143,7 @@ commands:
                     --output "<< parameters.output >>" \
                     --parts ${PARTS} \
                     <<# parameters.debug >> --debug <</ parameters.debug >>\
+                    $(echo << parameters.files >> | tr ',' ' ')
                   || ( echo 'Code Climate merge failed' && exit 1; )
       - unless:
           condition: "<< parameters.files >>"
