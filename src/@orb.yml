@@ -15,7 +15,7 @@ commands:
       - run:
           name: Install Code Climate test-reporter
           command: |
-            curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-$(uname -s | tr '[:upper:]' '[:lower:]')-amd64 > /usr/local/bin/cc-test-reporter
+            wget -O - -q https://codeclimate.com/downloads/test-reporter/test-reporter-latest-$(uname -s | tr '[:upper:]' '[:lower:]')-amd64 > /usr/local/bin/cc-test-reporter
             chmod +x /usr/local/bin/cc-test-reporter
 
   upload:
