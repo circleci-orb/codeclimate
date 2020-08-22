@@ -1,0 +1,23 @@
+description: |
+  Install Code Climate test-reporter binary.
+
+  Support executors:
+    - docker
+    - machine
+    - macos
+
+  Required:
+    - wget
+
+parameters:
+  path:
+    description: "Directory path of installing cc-test-reporter binary."
+    type: string
+    default: "/usr/local/bin"
+
+steps:
+  - run:
+      name: "Install cc-test-reporter binary"
+      command: |
+        wget -O - -q https://codeclimate.com/downloads/test-reporter/test-reporter-latest-$(uname -s | tr '[:upper:]' '[:lower:]')-amd64 > "<< parameters.path >>/cc-test-reporter"
+        chmod +x "<< parameters.path >>/cc-test-reporter"

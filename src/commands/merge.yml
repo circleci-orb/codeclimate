@@ -1,0 +1,44 @@
+description: |
+  Merge code coverage files to Code Climate syntax
+
+parameters:
+  files:
+    description: >
+      Comma separeted filepath of test coverage files.
+    type: string
+    default: ""
+
+  output:
+    description: >
+      Output path.
+    type: string
+    default: "codeclimate.json"
+
+  debug:
+    description: >
+      Run in debug mode.
+    type: boolean
+    default: false
+
+steps:
+  - when:
+      condition: "<< parameters.files >>"
+      steps:
+        - run:
+            name: Merge coverage results
+            command: |
+              PARTS="$(echo << parameters.files >> | tr ',' '\n' | wc -l)"
+              cc-test-reporter sum-coverage \
+                --output "<< parameters.output >>" \
+                --parts ${PARTS} \
+                <<# parameters.debug >> --debug <</ parameters.debug >>\
+                $(echo << parameters.files >> | tr ',' ' ')
+              || ( echo 'Code Climate merge failed' && exit 1; )
+
+  - unless:
+      condition: "<< parameters.files >>"
+      steps:
+        - run:
+            name: "ERROR: 'files' parameter is empty"
+            command: |
+              exit 1
